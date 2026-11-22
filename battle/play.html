@@ -71,6 +71,8 @@ button{font:inherit;color:#fff;cursor:pointer}
 .b:active{transform:scale(.96)}
 .b .hf{font-size:19px;display:block;color:var(--c);text-shadow:0 0 8px rgba(0,0,0,.9)}
 .b .st{display:block;margin-top:2px}
+a.small{color:#fff;text-decoration:none;display:inline-block}
+@media (max-width:560px){.hsm{display:none}}
 .small{font-size:13px;padding:7px 12px;border-radius:10px;border:1px solid rgba(255,210,120,.45);background:rgba(20,16,32,.8)}
 .dmg{position:fixed;z-index:4;pointer-events:none;font-family:"Nanum Myeongjo",serif;font-weight:800;font-size:36px;-webkit-text-stroke:1.5px rgba(0,0,0,.85);paint-order:stroke fill;transform:translate(-50%,-50%);animation:up 1.1s ease-out forwards}
 .dmg.crit{font-size:60px;color:#ffd84a;animation:crit 1.2s ease-out forwards}
@@ -168,7 +170,7 @@ body.menu .top,body.menu .bottom{display:none}
 <div id="cast"></div><div id="turn"></div>
 <div id="intro"><div class="s1 hf" id="i1"></div><div class="line"></div><div class="s2 hf" id="i2"></div><div class="line"></div><div class="s3 hf" id="i3"></div></div>
 <div class="top">
-  <div class="title"><div><span class="logo hf">용사의 전설</span><span id="place"></span></div><div><button class="small" id="snd" onclick="toggleSnd()">♪ 사운드 켜짐</button> <button class="small" onclick="toMenu()">≡ 메뉴</button></div></div>
+  <div class="title"><div><span class="logo hf">용사의 전설</span><span id="place"></span></div><div><a class="small" href="../index.html" title="게임 목록으로" aria-label="게임 목록">🏠<span class="hsm"> 게임 목록</span></a> <button class="small" id="snd" onclick="toggleSnd()">♪ 사운드 켜짐</button> <button class="small" onclick="toMenu()">≡ 메뉴</button></div></div>
   <div class="cards">
     <div class="card glass">
       <div class="name hf"><span id="pname">용사</span> <span class="st" id="pst">Lv.1</span></div>
@@ -191,7 +193,7 @@ body.menu .top,body.menu .bottom{display:none}
 </div>
 <div id="ov">
  <div id="hub" class="panel glass"><div class="logo hf big">용사의 전설</div><div class="sub">5개 지역 · 30개 스테이지 · 10스테이지마다 보스</div><div class="stats" id="hubStats"></div>
-  <button class="mb pri" onclick="showStages()">스테이지 선택</button><button class="mb" onclick="showPvpSetup()">2인용 대전</button><button class="mb" onclick="showGacha()">무기 룰렛</button><button class="mb" onclick="showArmory()">무기고 · 장착</button><button class="mb" onclick="showForge()">대장간 · 무기 강화</button></div>
+  <button class="mb pri" onclick="showStages()">스테이지 선택</button><button class="mb" onclick="showPvpSetup()">2인용 대전</button><button class="mb" onclick="showGacha()">무기 룰렛</button><button class="mb" onclick="showArmory()">무기고 · 장착</button><button class="mb" onclick="showForge()">대장간 · 무기 강화</button><a class="mb" href="../index.html" style="text-decoration:none;text-align:center">🏠 게임 목록</a></div>
  <div id="stages" class="panel glass wide"><div class="ph"><span class="hf">스테이지 선택</span><button class="small" onclick="showHub()">← 돌아가기</button></div><div class="stats" id="stStats"></div><div id="stGrid"></div></div>
  <div id="forge" class="panel glass"><div class="ph"><span class="hf">대장간</span><button class="small" onclick="showHub()">← 돌아가기</button></div>
   <div id="fsword"></div><div id="fname" class="hf"></div><div id="finfo"></div><div id="fres"></div>
