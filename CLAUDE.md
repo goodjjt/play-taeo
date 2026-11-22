@@ -9,10 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `shooting/play.html`("뿅뿅 슈터"): 1~2인용 세로 스크롤 네온 슈팅 게임, 80 스테이지.
 - `battle/play.html`("용사의 전설"): 3D 턴제 RPG. 5개 지역, 30 스테이지, 10스테이지마다 보스가 나오고, 대장간·뽑기·무기고와 2인 PvP 모드가 있습니다.
 - `zombi/play.html`("좀비 아레나: 최후의 생존자"): 탑다운 웨이브 생존 슈팅 게임.
+- `word_chain/play.html`("말로 하는 끝말잇기"): 컴퓨터와 하는 끝말잇기. 음성 인식(SpeechRecognition)이나 입력으로 답하고, 컴퓨터는 speechSynthesis로 말합니다. three.js를 쓰지 않습니다. 최고 점수는 `wc-best`에 저장됩니다.
 
 UI 문구와 코드 주석은 한국어입니다.
 
-**게임 추가하기:** 폴더와 HTML 파일을 만든 뒤 `index.html`의 `GAMES` 배열에 항목(`path`, `title`, `icon`, `color`, `desc`, `tags`)을 추가합니다. 빌드 단계가 없어서 런처가 폴더를 자동으로 찾지 못하므로, `GAMES`에 없는 게임은 화면에 나오지 않습니다.
+**게임 추가하기:** 폴더와 HTML 파일을 만든 뒤 `index.html`의 `GAMES` 배열에 항목(`path`, `title`, `icon`, `color`, `desc`, `tags`, 선택 사항 `room`)을 추가합니다. 런처는 `ROOMS` 구역별로 나뉘어 있습니다. `room`이 없으면 '태오 오락실'(맨 위), `room: 'dad'`이면 아래쪽 '아빠 오락실'에 나옵니다(지금은 `word_chain`). 빌드 단계가 없어서 런처가 폴더를 자동으로 찾지 못하므로, `GAMES`에 없는 게임은 화면에 나오지 않습니다.
 
 빌드 단계, 패키지 매니저, 린터, 테스트가 모두 없습니다. 각 게임은 하나의 독립된 HTML 파일이고 외부 의존성은 CDN에서만 불러옵니다. 게임마다 **three.js 버전이 다르므로** 게임끼리 코드를 그대로 복사하지 마세요.
 
@@ -54,8 +55,9 @@ python3 -m http.server 8000
 - `shooting`: 타이틀 화면 왼쪽 위 ⌂ 버튼(`HOME_BTN`), 또는 타이틀 화면에서 Esc. 둘 다 `goHome()`을 거칩니다.
 - `battle`: 메인 메뉴(`hub` 패널) 맨 아래의 "🏠 게임 목록" 버튼, 그리고 전투 중 상단 헤더의 같은 링크(사운드·메뉴 버튼 옆). 메뉴가 열리면 `body.menu`가 헤더를 숨기기 때문에 두 군데 모두 있어야 합니다.
 - `zombi`: 시작 메뉴의 "🏠 게임 목록" 버튼("게임 시작" 옆).
+- `word_chain`: 상단 헤더의 "🏠 게임 목록" 버튼("새 게임" 옆).
 
 ## `shooting` 조작과 저장
 
 - **조작**: 포인터 드래그(`drags` 맵으로 멀티터치 지원), 1P는 WASD, 방향키는 1인 모드에서 1P, 2인 모드에서 2P. P 또는 Esc로 일시정지, M은 음소거, B는 음악 켜기/끄기, Enter 또는 Space로 확인.
-- **localStorage 키**: `ppyong_best`, `ppyong_best2`(모드별 최고 점수), `ppyong_stage1`, `ppyong_stage2`(모드별 해금된 최고 스테이지, 최대 81), `ppyong_music`. 모든 저장소 접근은 try/catch로 감싸져 있으니(세 게임 모두) 계속 그렇게 유지하세요.
+- **localStorage 키**: `ppyong_best`, `ppyong_best2`(모드별 최고 점수), `ppyong_stage1`, `ppyong_stage2`(모드별 해금된 최고 스테이지, 최대 81), `ppyong_music`. 모든 저장소 접근은 try/catch로 감싸져 있으니(모든 게임 공통) 계속 그렇게 유지하세요.

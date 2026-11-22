@@ -48,6 +48,8 @@
     align-self:flex-start;margin-top:4px;font-family:Orbitron,sans-serif;font-weight:700;font-size:13px;
     letter-spacing:.15em;padding:8px 16px;border-radius:99px;color:#05040d;background:var(--c);
   }
+  .room{margin:56px 0 20px;text-align:center;font-size:clamp(24px,5vw,34px);font-weight:400;color:var(--cyan);
+    text-shadow:0 0 10px var(--cyan),0 0 26px rgba(0,229,255,.45)}
   .empty{text-align:center;color:var(--muted);font-family:sans-serif}
   footer{margin-top:48px;text-align:center;color:var(--muted);font-family:sans-serif;font-size:13px}
 </style>
@@ -58,13 +60,14 @@
     <h1>태오 오락실</h1>
     <p>하고 싶은 게임을 골라봐!</p>
   </header>
-  <main class="grid" id="games"></main>
+  <main id="games"></main>
   <footer id="count"></footer>
 </div>
 
 <script>
 // 새 게임을 추가하면 여기에 한 줄씩 넣어주세요.
 // path: index.html 기준 게임 파일 경로 (폴더이름/파일)
+// room: 'dad'면 아래쪽 '아빠 오락실'에 나와요. 없으면 '태오 오락실'.
 const GAMES = [
   {
     path: 'zombi/play.html',
@@ -90,18 +93,37 @@ const GAMES = [
     desc: '네온 은하를 지키는 슈팅 게임. 8개 섹터, 80 스테이지와 보스를 물리쳐라!',
     tags: ['슈팅', '1~2인', '80 스테이지'],
   },
+  {
+    path: 'word_chain/play.html',
+    room: 'dad',
+    title: '말로 하는 끝말잇기',
+    icon: '🗣️',
+    color: '#f2784b',
+    desc: '마이크에 대고 말하거나 입력해서 컴퓨터와 끝말잇기! 쉬움·보통·어려움 세 가지 난이도.',
+    tags: ['말놀이', '음성', '1인'],
+  },
 ];
 
-const grid = document.getElementById('games');
+// 오락실 구역: 첫 번째는 맨 위 제목(태오 오락실)이 대신하므로 소제목을 따로 달지 않아요.
+const ROOMS = [
+  { id: 'taeo', title: '태오 오락실' },
+  { id: 'dad',  title: '아빠 오락실' },
+];
+
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-grid.innerHTML = GAMES.length ? GAMES.map(g => `
+const card = g => `
   <a class="card" href="${esc(g.path)}" style="--c:${esc(g.color || '#00e5ff')}">
     <div class="icon">${esc(g.icon || '🎮')}</div>
     <h2>${esc(g.title)}</h2>
     <p>${esc(g.desc || '')}</p>
     <div class="tags">${(g.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
     <span class="play">PLAY ▶</span>
-  </a>`).join('') : '<p class="empty">아직 게임이 없어요.</p>';
+  </a>`;
+document.getElementById('games').innerHTML = GAMES.length ? ROOMS.map((r, i) => {
+  const list = GAMES.filter(g => (g.room || 'taeo') === r.id);
+  if (!list.length) return '';
+  return (i ? `<h2 class="room">${esc(r.title)}</h2>` : '') + `<div class="grid">${list.map(card).join('')}</div>`;
+}).join('') : '<p class="empty">아직 게임이 없어요.</p>';
 document.getElementById('count').textContent = `게임 ${GAMES.length}개`;
 </script>
 </body>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>말로 하는 끝말잇기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8ef; --card:#ffffff; --ink:#2b2420; --muted:#8a7d72; --line:#efe3d5;
+    --cpu:#5b7cfa; --cpu-soft:#eaf0ff; --me:#f2784b; --me-soft:#fff0e8;
+    --ok:#2fa36b; --bad:#e0475b; --accent:#ffcf4a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#1c1917; --card:#26221f; --ink:#f4ede6; --muted:#a59a90; --line:#3a332e;
+      --cpu-soft:#2a3150; --me-soft:#41281f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  h1{font-family:"Jua",sans-serif;font-weight:400;font-size:30px;margin:0;letter-spacing:-.5px}
+  h1 span{color:var(--me)}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  select,button{font:inherit}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .seg button{border:0;background:none;color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:14px}
+  .seg button.on{background:var(--ink);color:var(--bg)}
+  .btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:12px;cursor:pointer;font-size:14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{background:var(--me);border-color:var(--me);color:#fff;font-weight:700}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .stat b{display:block;font-family:"Jua";font-weight:400;font-size:24px}
+  .stat small{color:var(--muted);font-size:12px}
+
+  .stage{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 18px 18px;text-align:center;position:relative;overflow:hidden}
+  .who{font-size:13px;color:var(--muted);height:18px}
+  .current{font-family:"Jua";font-size:64px;line-height:1.15;margin:6px 0 4px;min-height:74px;word-break:keep-all}
+  .current .last{color:var(--me);text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:8px}
+  .need{font-size:15px;color:var(--muted);min-height:22px}
+  .need b{color:var(--ink);font-size:20px;font-family:"Jua";font-weight:400;background:var(--accent);color:#2b2420;padding:0 8px;border-radius:8px;margin:0 2px}
+  .timer{height:8px;background:var(--line);border-radius:999px;margin:16px 0 18px;overflow:hidden}
+  .timer i{display:block;height:100%;width:100%;background:var(--ok);border-radius:999px;transition:background .3s}
+
+  .mic{width:96px;height:96px;border-radius:50%;border:0;background:var(--me);color:#fff;cursor:pointer;display:inline-grid;place-items:center;box-shadow:0 6px 18px rgba(242,120,75,.35);transition:transform .15s}
+  .mic:hover{transform:scale(1.04)}
+  .mic:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+  .mic svg{width:40px;height:40px}
+  .mic.listening{animation:pulse 1.2s infinite;background:var(--bad)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,71,91,.5)}70%{box-shadow:0 0 0 22px rgba(224,71,91,0)}100%{box-shadow:0 0 0 0 rgba(224,71,91,0)}}
+  .heard{min-height:24px;margin-top:10px;color:var(--muted);font-size:15px}
+  .msg{min-height:24px;margin-top:4px;font-weight:500;font-size:15px}
+  .msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+
+  .typebox{display:flex;gap:8px;margin-top:14px}
+  .typebox input{flex:1;font:inherit;font-size:17px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);outline:none}
+  .typebox input:focus{border-color:var(--me)}
+  .hint-row{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .small{font-size:12px;color:var(--muted)}
+
+  .chain{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .chip{padding:6px 12px;border-radius:999px;font-size:15px;font-weight:500}
+  .chip.cpu{background:var(--cpu-soft);color:var(--cpu)}
+  .chip.me{background:var(--me-soft);color:var(--me)}
+  .arrow{color:var(--muted);font-size:12px}
+
+  .overlay{position:absolute;inset:0;background:color-mix(in srgb,var(--card) 92%,transparent);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px}
+  .overlay.show{display:flex}
+  .overlay h2{font-family:"Jua";font-weight:400;font-size:40px;margin:0}
+  .overlay p{margin:0;color:var(--muted)}
+  .rules{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.7}
+  .rules summary{cursor:pointer;color:var(--ink);font-weight:500}
+  .voice-status{font-size:12px;color:var(--muted);margin-top:8px}
+  label.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>말로 하는 <span>끝말잇기</span></h1>
+    <div class="controls">
+      <div class="seg" id="level">
+        <button data-lv="easy">쉬움</button>
+        <button data-lv="normal" class="on">보통</button>
+        <button data-lv="hard">어려움</button>
+      </div>
+      <button class="btn" id="restartBtn">새 게임</button>
+      <a class="btn" href="../index.html" style="text-decoration:none">🏠 게임 목록</a>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><small>점수</small><b id="score">0</b></div>
+    <div class="stat"><small>이어간 단어</small><b id="count">0</b></div>
+    <div class="stat"><small>최고 점수</small><b id="best">0</b></div>
+  </div>
+
+  <div class="stage">
+    <div class="who" id="who">&nbsp;</div>
+    <div class="current" id="current">준비!</div>
+    <div class="need" id="need">시작 버튼을 누르면 컴퓨터가 먼저 말해요</div>
+    <div class="timer"><i id="bar"></i></div>
+
+    <button class="mic" id="mic" disabled aria-label="말하기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/></svg>
+    </button>
+    <div class="heard" id="heard">&nbsp;</div>
+    <div class="msg" id="msg">&nbsp;</div>
+
+    <form class="typebox" id="typeForm" autocomplete="off">
+      <input id="typeInput" placeholder="말 대신 입력해도 돼요" disabled>
+      <button class="btn" type="submit" id="typeBtn" disabled>내기</button>
+    </form>
+    <div class="hint-row">
+      <button class="btn" id="hintBtn" disabled>힌트 (-30점)</button>
+      <button class="btn" id="giveUpBtn" disabled>포기</button>
+      <label class="chk"><input type="checkbox" id="ttsChk" checked> 컴퓨터 목소리</label>
+      <label class="chk"><input type="checkbox" id="strictChk"> 사전 단어만 인정</label>
+    </div>
+    <div class="voice-status" id="voiceStatus">음성 기능 확인 중…</div>
+
+    <div class="overlay show" id="overlay">
+      <h2 id="ovTitle">끝말잇기 한 판?</h2>
+      <p id="ovText">마이크 버튼(또는 스페이스바)을 누르고 단어를 말하세요.</p>
+      <button class="btn primary" id="startBtn" style="margin-top:8px;padding:12px 26px;font-size:17px">시작하기</button>
+    </div>
+  </div>
+
+  <div class="chain" id="chain"></div>
+
+  <details class="rules">
+    <summary>규칙 보기</summary>
+    앞 단어의 마지막 글자로 시작하는 두 글자 이상의 단어를 말하세요.<br>
+    두음법칙을 적용해요. 예: 력 → 역, 녀 → 여, 라 → 나, 료 → 요.<br>
+    한 번 나온 단어는 다시 쓸 수 없어요. 제한 시간 안에 못 하면 져요.<br>
+    컴퓨터가 이어갈 단어를 못 찾으면 이겨요. 어려움 모드의 컴퓨터는 한방 단어를 노려요.<br>
+    점수: 글자 수 × 10 + 남은 시간 보너스.
+  </details>
+</div>
+
+<script>
+// ---------- 단어 사전 ----------
+const RAW = `
+가방 가수 가위 가족 가을 가구 가지 가게 가루 가면 가슴 가격 가로수 가사 가치 가뭄 가마 가속 가정 각도 각오 간식 간호사 간판 간장 갈비 갈매기 갈대 감자 감기 감동 감사 감옥 감정 강물 강아지 강의 강도 개구리 개미 개나리 개울 개인 개학 거울 거리 거미 거북이 거인 거실 거품 건물 건강 건축 건전지 걸음 검사 검정 게임 게시판 겨울 겨자 결혼 결과 결심 경찰 경기 경주 경제 경치 경험 계단 계란 계절 계산 계획 계곡 고양이 고구마 고기 고래 고추 고무 고향 고개 고민 고속도로 고등어 고리 곡식 곡선 공원 공부 공기 공책 공주 공항 공장 공연 공룡 과자 과일 과학 과거 과제 관광 관객 관심 광장 광고 교실 교과서 교회 교육 교통 교사 구름 구두 구멍 구슬 구급차 구역 국수 국어 국가 국물 국기 국민 군인 군대 군밤 궁전 귀신 귀걸이 규칙 그림 그네 그릇 그늘 그물 그림자 극장 근육 글자 글씨 금요일 금붕어 금고 기차 기린 기억 기술 기분 기름 기계 기자 기온 기도 기회 기러기 길이 길거리 김치 김밥 까치 까마귀 꼬리 꼬마 꽃병 꽃잎 꽃게 꿈나무
+나무 나비 나라 나이 나침반 나팔 나그네 낙엽 낙타 낙지 날개 날씨 날짜 남자 남편 남쪽 낮잠 내일 내용 냄비 냄새 넥타이 노래 노트 노력 노인 노을 노루 녹차 녹음 논리 농구 농부 농장 농사 누나 눈물 눈사람 눈썹 뉴스
+다리 다람쥐 다리미 단어 단풍 단추 달력 달걀 달팽이 달리기 닭고기 담요 당근 당나귀 대학교 대화 대문 대통령 대나무 대추 도시 도서관 도토리 도마 도로 도자기 도장 도깨비 도둑 도움 독서 독수리 돈가스 동물 동생 동네 동화 동전 동굴 동요 돼지 두부 두더지 두꺼비 드라마 드럼 등대 등산 딸기 땅콩 떡볶이
+라면 라디오 레몬 로봇 로켓 리본 리듬
+마을 마음 마술 마차 마늘 마당 마라톤 마스크 만화 만두 만세 말씀 망치 망원경 매미 매일 매듭 머리 머리카락 먹이 메뚜기 메아리 메기 면도기 명함 명절 모자 모래 모기 모양 모임 모서리 목걸이 목소리 목요일 목욕 무지개 무릎 무게 무대 무궁화 무용 문제 문어 문화 문장 물고기 물감 물건 물병 미소 미술 미래 미역 미용실 미끄럼틀 민들레 민속 밀가루
+바다 바람 바나나 바지 바위 바구니 바늘 바퀴 바이올린 박물관 박수 박쥐 반지 반달 반찬 반딧불 발가락 발명 발자국 밤하늘 방학 방석 방송 방울 배추 배꼽 배구 배낭 백화점 백조 백과사전 버스 버섯 버터 번개 벌레 범인 법원 벽돌 벽시계 변호사 별자리 병원 병아리 보리 보물 보석 보름달 복숭아 복도 봄비 봉투 봉사 부모 부엌 부채 부엉이 부산 부자 북극곰 북쪽 분수 분필 불꽃 불고기 비행기 비누 비밀 비둘기 비빔밥 비옷 빗자루 빵집
+사과 사랑 사자 사진 사람 사탕 사슴 사막 사전 사다리 사계절 사이다 산책 산소 산타 살구 삼촌 삼각형 상자 상어 상추 상처 새우 새벽 색깔 색종이 생일 생선 생각 생활 서울 서점 서랍 서류 선생님 선물 선풍기 선수 설탕 설날 성격 성공 세상 세탁기 세수 소리 소나기 소풍 소설 소금 소나무 소방관 소원 손가락 손님 손수건 송아지 송편 수박 수영 수업 수학 수건 수요일 수염 수첩 숙제 순서 숟가락 술래 숲속 스키 스케이트 스웨터 시계 시장 시간 시골 시소 시험 시인 식당 식물 식탁 신발 신문 신호등 신호 실수 실내화 심장 쌀밥
+아기 아버지 아이 아침 아파트 아저씨 아이스크림 악어 악기 악수 안경 안개 안녕 알람 앵무새 야구 야채 야자수 약국 약속 양말 양파 양치 양산 어머니 어린이 어깨 어항 언니 언덕 얼굴 얼음 엄마 여름 여우 여행 여자 여왕 여권 역사 역도 연필 연못 연극 연기 연어 연습 연휴 열쇠 열차 열매 영화 영어 영웅 예술 예절 오리 오이 오징어 오늘 오렌지 오후 오빠 옥수수 온도 옷장 왕자 왕관 외국 외계인 요리 요일 요정 요구르트 용기 용돈 우유 우산 우주 우체국 우정 우물 운동 운동장 운명 울타리 원숭이 원피스 월요일 유리 유치원 유령 은행 은하수 음악 음식 의자 의사 이름 이불 이야기 이모 이빨 이사 인형 인사 인터넷 인간 일기 일요일 일본 임금 입술
+자동차 자전거 자석 자연 자리 자유 작가 잔디 잠자리 잠옷 장미 장난감 장갑 장마 장구 재미 저녁 저금통 전화 전기 전쟁 전구 점심 점수 젓가락 정원 정말 정답 정류장 제비 제주도 조개 조각 조카 종이 종소리 주머니 주사 주말 주스 주전자 죽순 줄넘기 지구 지도 지갑 지하철 지우개 지렁이 지붕 진주 진달래 질문 짐승 집게 짜장면
+차례 참새 참외 창문 창고 채소 책상 책가방 처음 천둥 천사 천장 철도 철새 청소 청바지 청소기 체육 체조 초콜릿 초등학교 초록 촛불 추석 추억 축구 축제 충전기 치약 치마 치즈 치킨 치과 친구 칠판 칫솔
+카메라 카드 칼국수 커피 커튼 컴퓨터 코끼리 코알라 콩나물 크레파스 크리스마스 키위 타조 타이어 탁자 태양 태극기 태권도 태풍 택시 토끼 토마토 토요일 통조림 투수 트럭 트럼펫 파도 파리 파랑새 파인애플 파티 팔찌 편지 편의점 평화 포도 포크 표정 풀잎 풍선 풍경 피아노 피자 피리 필통
+하늘 하마 하루 하모니카 학교 학생 한글 한복 할머니 할아버지 해바라기 해적 해님 햄버거 향기 허수아비 호랑이 호박 호수 호텔 호두 홍수 홍차 화분 화가 화장실 화요일 화산 환자 황소 회사 회의 휴지 휴가 흙탕물 희망 힘겨루기
+`;
+const WORDS = [...new Set(RAW.split(/\s+/).filter(w => /^[가-힣]{2,}$/.test(w)))];
+const DICT = new Set(WORDS);
+const byFirst = {};
+WORDS.forEach(w => (byFirst[w[0]] ||= []).push(w));
+
+// ---------- 두음법칙 ----------
+function dueum(ch){
+  const c = ch.charCodeAt(0) - 0xAC00;
+  if (c < 0 || c > 11171) return ch;
+  let cho = Math.floor(c / 588);
+  const jung = Math.floor((c % 588) / 28), jong = c % 28;
+  const Y = [2,3,6,7,12,17,20]; // ㅑ ㅒ ㅕ ㅖ ㅛ ㅠ ㅣ
+  if (cho === 5) cho = Y.includes(jung) ? 11 : 2;        // ㄹ → ㅇ / ㄴ
+  else if (cho === 2 && Y.includes(jung)) cho = 11;       // ㄴ → ㅇ
+  else return ch;
+  return String.fromCharCode(0xAC00 + (cho * 21 + jung) * 28 + jong);
+}
+const startsFor = ch => { const d = dueum(ch); return d !== ch ? [ch, d] : [ch]; };
+const candidates = ch => startsFor(ch).flatMap(s => byFirst[s] || []).filter(w => !used.has(w));
+
+// ---------- 상태 ----------
+const LEVELS = { easy:{time:25}, normal:{time:18}, hard:{time:12} };
+let level = 'normal', used = new Set(), lastChar = '', turn = 'idle', score = 0, count = 0;
+let timeLeft = 0, timeMax = 0, timerId = null, playing = false;
+let best = 0; try { best = +localStorage.getItem('wc-best') || 0; } catch(e){}
+
+const $ = id => document.getElementById(id);
+$('best').textContent = best;
+
+function setMsg(t, kind=''){ const m=$('msg'); m.textContent = t || ' '; m.className = 'msg ' + kind; }
+function renderCurrent(word, who){
+  $('who').textContent = who === 'cpu' ? '🤖 컴퓨터' : who === 'me' ? '🙋 나' : ' ';
+  $('current').innerHTML = word ? `${word.slice(0,-1)}<span class="last">${word.slice(-1)}</span>` : '…';
+}
+function renderNeed(){
+  if (!playing || turn !== 'me') return;
+  const s = startsFor(lastChar);
+  $('need').innerHTML = `<b>${s[0]}</b>${s[1] ? ` 또는 <b>${s[1]}</b>` : ''} (으)로 시작하는 단어!`;
+}
+function addChip(word, who){
+  const chain = $('chain');
+  if (chain.children.length) { const a=document.createElement('span'); a.className='arrow'; a.textContent='→'; chain.appendChild(a); }
+  const c = document.createElement('span'); c.className = 'chip ' + who; c.textContent = word; chain.appendChild(c);
+}
+function setInputs(on){
+  $('mic').disabled = !on || !voice.available;
+  $('typeInput').disabled = !on; $('typeBtn').disabled = !on;
+  $('hintBtn').disabled = !on; $('giveUpBtn').disabled = !on;
+  if (on && !voice.available) $('typeInput').focus();
+}
+
+// ---------- 타이머 ----------
+function startTimer(){
+  timeMax = timeLeft = LEVELS[level].time;
+  clearInterval(timerId);
+  const t0 = performance.now();
+  timerId = setInterval(() => {
+    timeLeft = Math.max(0, timeMax - (performance.now() - t0) / 1000);
+    const p = timeLeft / timeMax;
+    $('bar').style.width = (p*100) + '%';
+    $('bar').style.background = p > .5 ? 'var(--ok)' : p > .25 ? 'var(--accent)' : 'var(--bad)';
+    if (timeLeft <= 0) { clearInterval(timerId); lose('시간 초과!'); }
+  }, 80);
+}
+const stopTimer = () => clearInterval(timerId);
+
+// ---------- 컴퓨터 차례 ----------
+function pickWord(list){
+  const scored = list.map(w => ({ w, n: candidates(w.slice(-1)).filter(x => x !== w).length }));
+  if (level === 'easy') {
+    const safe = scored.filter(s => s.n >= 3);
+    return (safe.length ? safe : scored)[Math.floor(Math.random() * (safe.length ? safe.length : scored.length))].w;
+  }
+  if (level === 'hard') {
+    scored.sort((a,b) => a.n - b.n);
+    const top = scored.slice(0, Math.max(1, Math.ceil(scored.length * 0.25)));
+    return top[Math.floor(Math.random() * top.length)].w;
+  }
+  const ok = scored.filter(s => s.n >= 1);
+  const pool = ok.length ? ok : scored;
+  return pool[Math.floor(Math.random() * pool.length)].w;
+}
+async function cpuTurn(first=false){
+  turn = 'cpu'; setInputs(false);
+  $('need').textContent = '컴퓨터가 생각 중…';
+  await sleep(500 + Math.random()*600);
+  if (!playing) return;
+  let list = first ? WORDS.filter(w => candidates(w.slice(-1)).length >= 3) : candidates(lastChar);
+  if (!list.length) { win('컴퓨터가 이을 단어를 못 찾았어요!'); return; }
+  const w = pickWord(list);
+  used.add(w); lastChar = w.slice(-1);
+  renderCurrent(w, 'cpu'); addChip(w, 'cpu');
+  await speak(w);
+  if (!playing) return;
+  turn = 'me'; renderNeed(); setInputs(true); $('heard').innerHTML='&nbsp;'; startTimer();
+}
+
+// ---------- 내 차례 ----------
+function clean(text){
+  const tokens = (text || '').replace(/[^가-힣\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const s = startsFor(lastChar);
+  // 띄어 말한 경우: 시작 글자가 맞는 토큰 우선, 없으면 전체 붙여서
+  const hit = tokens.find(t => s.includes(t[0]));
+  let w = hit || tokens.join('');
+  // "사과요", "사과입니다" 같은 어미 제거
+  if (!DICT.has(w)) for (const suf of ['입니다','이에요','예요','이요','요']) {
+    if (w.endsWith(suf) && w.length - suf.length >= 2) { w = w.slice(0, -suf.length); break; }
+  }
+  return w;
+}
+function submit(raw){
+  if (!playing || turn !== 'me') return;
+  const w = clean(raw);
+  const s = startsFor(lastChar);
+  if (w.length < 2) return setMsg('두 글자 이상 단어를 말해 주세요.', 'bad');
+  if (!s.includes(w[0])) return setMsg(`‘${w}’는 ${s.join(' 또는 ')}(으)로 시작하지 않아요.`, 'bad');
+  if (used.has(w)) return setMsg(`‘${w}’는 이미 나온 단어예요.`, 'bad');
+  if ($('strictChk').checked && !DICT.has(w)) return setMsg(`‘${w}’는 사전에 없는 단어예요.`, 'bad');
+
+  stopTimer();
+  const gained = w.length * 10 + Math.round(timeLeft * 2);
+  score += gained; count++;
+  $('score').textContent = score; $('count').textContent = count;
+  used.add(w); lastChar = w.slice(-1);
+  renderCurrent(w, 'me'); addChip(w, 'me');
+  setMsg(`좋아요! +${gained}점`, 'ok');
+  $('typeInput').value = '';
+  cpuTurn();
+}
+
+// ---------- 결과 ----------
+function end(title, text){
+  playing = false; turn = 'idle'; stopTimer(); setInputs(false);
+  voice.stop();
+  if (score > best) { best = score; $('best').textContent = best; try{localStorage.setItem('wc-best', best);}catch(e){} text += ' 최고 점수 갱신!'; }
+  $('ovTitle').textContent = title; $('ovText').textContent = text;
+  $('startBtn').textContent = '다시 하기';
+  $('overlay').classList.add('show');
+}
+function win(why){ score += 100; $('score').textContent = score; speak('제가 졌어요'); end('이겼어요! 🎉', `${why} 보너스 +100점 · 총 ${score}점`); }
+function lose(why){
+  const ex = candidates(lastChar)[0];
+  speak('제가 이겼어요');
+  end('아쉬워요 😢', `${why}${ex ? ` 예를 들면 ‘${ex}’가 있었어요.` : ''} 총 ${score}점`);
+}
+
+function start(){
+  used = new Set(); lastChar=''; score=0; count=0;
+  $('score').textContent = 0; $('count').textContent = 0;
+  $('chain').innerHTML = ''; setMsg(''); $('heard').innerHTML='&nbsp;';
+  $('bar').style.width = '100%'; $('bar').style.background='var(--ok)';
+  $('overlay').classList.remove('show');
+  playing = true;
+  unlockSpeech();
+  cpuTurn(true);
+}
+
+// ---------- 음성 출력 ----------
+let tts = null;
+function unlockSpeech(){ try { if (!tts && window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch(e){} }
+function speak(text){
+  if (!$('ttsChk').checked) return Promise.resolve();
+  const cap = ms => new Promise(r => setTimeout(r, ms));
+  if (tts) {
+    const p = tts.speak(text, { language: 'ko' }).catch(() => tts.speak(text).catch(() => {}));
+    return Promise.race([p, cap(4000)]);
+  }
+  if (window.speechSynthesis) {
+    return Promise.race([new Promise(res => {
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = 1;
+        const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('ko')); if (v) u.voice = v;
+        u.onend = u.onerror = () => res(); speechSynthesis.speak(u);
+      } catch(e){ res(); }
+    }), cap(4000)]);
+  }
+  return Promise.resolve();
+}
+
+// ---------- 음성 입력 ----------
+const voice = {
+  available: false, listening: false, impl: null, partialText: '',
+  start(){},
+  stop(){ try { this.impl && this.impl.stopFn && this.impl.stopFn(); } catch(e){} }
+};
+function setListening(on){
+  voice.listening = on;
+  $('mic').classList.toggle('listening', on);
+  if (on) $('heard').textContent = '듣고 있어요…';
+}
+function onHeard(text, final){
+  $('heard').textContent = `🎤 “${text}”`;
+  if (final) { voice.stop(); submit(text); }
+}
+function useDictation(d){
+  voice.available = true; voice.impl = { stopFn: () => d.stop().catch(()=>{}) };
+  d.onPartial(({text}) => { if (text) $('heard').textContent = `🎤 “${text}”`; });
+  d.onFinal(({text}) => { if (text && text.trim()) onHeard(text.trim(), true); });
+  d.onState(({state}) => setListening(state === 'listening'));
+  voice.start = () => {
+    d.start().catch(e => {
+      setListening(false);
+      const code = e && (e.code || e.message);
+      if (code === 'not_granted') { voice.available = false; $('mic').disabled = true; status('마이크 권한이 없어요. 입력창을 사용하세요.'); }
+      else setMsg('마이크를 시작하지 못했어요. 다시 눌러 주세요.', 'bad');
+    });
+  };
+  status('🎤 음성 입력 사용 가능 · 스페이스바로도 말할 수 있어요');
+}
+function useWebSpeech(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return false;
+  let rec = null;
+  voice.available = true;
+  voice.impl = { stopFn: () => rec && rec.stop() };
+  voice.start = () => {
+    rec = new SR(); rec.lang = 'ko-KR'; rec.interimResults = true; rec.maxAlternatives = 3;
+    rec.onstart = () => setListening(true);
+    rec.onend = () => setListening(false);
+    rec.onerror = e => { setListening(false); if (e.error === 'not-allowed') { voice.available=false; $('mic').disabled=true; status('마이크 권한이 없어요. 입력창을 사용하세요.'); } };
+    rec.onresult = e => {
+      const r = e.results[e.results.length - 1];
+      if (r.isFinal) {
+        // 여러 후보 중 규칙에 맞는 걸 우선
+        const alts = [...r].map(a => a.transcript.trim());
+        const good = alts.find(a => { const w = clean(a); return w.length>=2 && startsFor(lastChar).includes(w[0]) && !used.has(w); });
+        onHeard(good || alts[0], true);
+      } else $('heard').textContent = `🎤 “${r[0].transcript}”`;
+    };
+    try { rec.start(); } catch(e){}
+  };
+  status('🎤 음성 입력 사용 가능 · 스페이스바로도 말할 수 있어요');
+  return true;
+}
+function status(t){ $('voiceStatus').textContent = t; }
+function noVoice(){ status('이 화면에서는 음성 입력을 쓸 수 없어요. Chrome 탭이나 데스크톱 앱에서 열거나, 입력창을 사용하세요.'); }
+
+function toggleMic(){
+  if (!voice.available || turn !== 'me') return;
+  if (voice.listening) voice.stop(); else { setMsg(''); voice.start(); }
+}
+$('mic').addEventListener('click', toggleMic);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && document.activeElement !== $('typeInput') && !['BUTTON','SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault(); toggleMic();
+  }
+});
+
+// ---------- 기타 UI ----------
+$('typeForm').addEventListener('submit', e => { e.preventDefault(); submit($('typeInput').value); });
+$('startBtn').addEventListener('click', start);
+$('restartBtn').addEventListener('click', start);
+$('giveUpBtn').addEventListener('click', () => lose('포기했어요.'));
+$('hintBtn').addEventListener('click', () => {
+  const c = candidates(lastChar);
+  if (!c.length) return setMsg('사전에도 이을 단어가 없네요… 아는 단어로 도전!', 'bad');
+  const w = c[Math.floor(Math.random()*c.length)];
+  score = Math.max(0, score - 30); $('score').textContent = score;
+  setMsg(`힌트: ${w[0]}${'○'.repeat(w.length-1)} (${w.length}글자)`);
+});
+document.querySelectorAll('#level button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#level button').forEach(x => x.classList.toggle('on', x === b));
+  level = b.dataset.lv;
+}));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ---------- 기능 연결 ----------
+(function init(){
+  const useCap = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
+  useCap('tts').then(t => { if (t) tts = t; });
+  useCap('dictation').then(d => {
+    if (d) useDictation(d);
+    else if (!useWebSpeech()) noVoice();
+  });
+})();
+</script>
+</body>
+</html>
