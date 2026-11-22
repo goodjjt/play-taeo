@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-The repo holds browser games. Right now there is one: `shooting/play.html` ("뿅뿅 슈터"), a vertical neon shoot-'em-up for 1 or 2 players with 80 stages. The UI text and code comments are in Korean.
+The repo holds browser games, one per folder (`<folder>/<file>.html`). The root `index.html` ("태오 오락실") is a launcher page that links to each game. Right now there is one game: `shooting/play.html` ("뿅뿅 슈터"), a vertical neon shoot-'em-up for 1 or 2 players with 80 stages. The UI text and code comments are in Korean.
+
+**Adding a game:** create its folder and HTML file, then add an entry to the `GAMES` array in `index.html` (`path`, `title`, `icon`, `color`, `desc`, `tags`). There is no build step, so the launcher can't discover folders on its own; a game that isn't listed in `GAMES` won't appear.
 
 There is no build step, package manager, linter, or test suite. Each game is a single self-contained HTML file. Its only outside dependencies are three.js r0.160.0 (loaded from jsDelivr through an `<script type="importmap">`) and Google Fonts.
 
@@ -16,7 +18,7 @@ ES module imports don't work over `file://`, so serve the folder over HTTP:
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000/shooting/play.html`. To check a change, load the page in Playwright (Chromium is pre-installed) and look at the console for errors. WebGL has to work for the game to render.
+Then open `http://localhost:8000/` (the launcher) or `http://localhost:8000/shooting/play.html` directly. To check a change, load the page in Playwright (Chromium is pre-installed) and look at the console for errors. WebGL has to work for the game to render.
 
 ## Architecture of `shooting/play.html`
 

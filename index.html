@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>태오 오락실</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05040d; --panel:#0f0b24; --text:#f2f0ff; --muted:#9a93c4;
+    --pink:#ff2e88; --cyan:#00e5ff; --violet:#b44dff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:radial-gradient(ellipse at top,#1a0f3d 0%,var(--bg) 60%) fixed, var(--bg);
+    color:var(--text); font-family:"Black Han Sans",sans-serif;
+    padding:48px 16px 64px;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  header{text-align:center;margin-bottom:40px}
+  h1{
+    margin:0;font-family:Orbitron,"Black Han Sans",sans-serif;font-weight:900;
+    font-size:clamp(32px,8vw,56px);letter-spacing:.04em;
+    text-shadow:0 0 12px var(--pink),0 0 32px rgba(255,46,136,.5);
+  }
+  header p{margin:12px 0 0;color:var(--muted);font-size:16px;font-family:sans-serif}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .card{
+    --c:var(--cyan);
+    position:relative;display:flex;flex-direction:column;gap:10px;
+    padding:22px;border-radius:16px;text-decoration:none;color:inherit;
+    background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,0)) ,var(--panel);
+    border:1px solid color-mix(in srgb,var(--c) 35%,transparent);
+    box-shadow:0 0 24px color-mix(in srgb,var(--c) 15%,transparent);
+    transition:transform .15s,box-shadow .15s,border-color .15s;
+  }
+  .card:hover,.card:focus-visible{
+    transform:translateY(-4px);outline:none;border-color:var(--c);
+    box-shadow:0 0 36px color-mix(in srgb,var(--c) 45%,transparent);
+  }
+  .icon{font-size:44px;line-height:1}
+  .card h2{margin:0;font-size:24px;font-weight:400;color:var(--c);text-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
+  .card p{margin:0;word-break:keep-all;color:var(--muted);font-family:sans-serif;font-size:14px;line-height:1.5;flex:1}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-family:sans-serif;font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--text)}
+  .play{
+    align-self:flex-start;margin-top:4px;font-family:Orbitron,sans-serif;font-weight:700;font-size:13px;
+    letter-spacing:.15em;padding:8px 16px;border-radius:99px;color:#05040d;background:var(--c);
+  }
+  .empty{text-align:center;color:var(--muted);font-family:sans-serif}
+  footer{margin-top:48px;text-align:center;color:var(--muted);font-family:sans-serif;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>태오 오락실</h1>
+    <p>하고 싶은 게임을 골라봐!</p>
+  </header>
+  <main class="grid" id="games"></main>
+  <footer id="count"></footer>
+</div>
+
+<script>
+// 새 게임을 추가하면 여기에 한 줄씩 넣어주세요.
+// path: index.html 기준 게임 파일 경로 (폴더이름/파일)
+const GAMES = [
+  {
+    path: 'shooting/play.html',
+    title: '뿅뿅 슈터',
+    icon: '🚀',
+    color: '#ff2e88',
+    desc: '네온 은하를 지키는 슈팅 게임. 8개 섹터, 80 스테이지와 보스를 물리쳐라!',
+    tags: ['슈팅', '1~2인', '80 스테이지'],
+  },
+];
+
+const grid = document.getElementById('games');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+grid.innerHTML = GAMES.length ? GAMES.map(g => `
+  <a class="card" href="${esc(g.path)}" style="--c:${esc(g.color || '#00e5ff')}">
+    <div class="icon">${esc(g.icon || '🎮')}</div>
+    <h2>${esc(g.title)}</h2>
+    <p>${esc(g.desc || '')}</p>
+    <div class="tags">${(g.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+    <span class="play">PLAY ▶</span>
+  </a>`).join('') : '<p class="empty">아직 게임이 없어요.</p>';
+document.getElementById('count').textContent = `게임 ${GAMES.length}개`;
+</script>
+</body>
+</html>
