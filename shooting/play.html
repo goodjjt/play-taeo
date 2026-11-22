@@ -977,12 +977,15 @@ function cellAt(p){
 function togglePause(){ if (state==='play') state='pause'; else if (state==='pause') state='play'; }
 const BTN = { one:{x:W/2-155,y:560,w:145,h:66}, two:{x:W/2+10,y:560,w:145,h:66}, title:{x:W/2-80,y:640,w:160,h:44} };
 const inBtn = (p,b) => p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h;
+const HOME_BTN = {x:10, y:12, w:36, h:34}; // 타이틀 화면 왼쪽 위: 게임 목록(index.html)으로
+const goHome = () => { location.href = '../index.html'; };
 cv.addEventListener('pointerdown', e => {
   initAudio(); const p = toLogical(e);
   if (p.y < 52 && p.x > W-52){ muted = !muted; return; }
   if (p.y >= 52 && p.y < 90 && p.x > W-52){ toggleMusic(); return; }
   if (p.y < 52 && p.x > W-96 && p.x <= W-52 && (state==='play'||state==='pause')){ togglePause(); return; }
   if (state==='title'){
+    if (inBtn(p,HOME_BTN)){ goHome(); return; }
     if (inBtn(p,BTN.one)) goSelect(1); else if (inBtn(p,BTN.two)) goSelect(2);
     return;
   }
@@ -1018,7 +1021,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
   if (e.code==='KeyP') togglePause();
-  if (e.code==='Escape'){ if (state==='over' || state==='allclear') goSelect(mode); else if (state==='select') state='title'; else togglePause(); }
+  if (e.code==='Escape'){ if (state==='over' || state==='allclear') goSelect(mode); else if (state==='select') state='title'; else if (state==='title') goHome(); else togglePause(); }
   if (state==='select'){
     const mx = Math.min(80, unlocked[mode]), d = {ArrowLeft:-1, ArrowRight:1, ArrowUp:-10, ArrowDown:10}[e.code];
     if (d){ sel = clamp(sel + d, 1, mx); beep(880, 0.04, 'square', 0.02); }
@@ -1385,6 +1388,11 @@ function drawButtons(){
   hudBox(W-46, 54, 36, 32, musicOn && !muted ? '#b44dff' : '#555577');
   txt('♪', W-28, 71, 18, musicOn && !muted ? '#e3c6ff' : '#777799', 'center', musicOn && !muted ? '#b44dff' : null);
   if (!musicOn){ ctx.strokeStyle = '#ff3864'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W-38, 62); ctx.lineTo(W-18, 80); ctx.stroke(); }
+  if (state==='title'){
+    const b = HOME_BTN; hudBox(b.x, b.y, b.w, b.h, '#00e5ff');
+    ctx.fillStyle = '#cdf6ff'; ctx.beginPath(); ctx.moveTo(b.x+18, b.y+8); ctx.lineTo(b.x+29, b.y+18); ctx.lineTo(b.x+7, b.y+18); ctx.closePath(); ctx.fill();
+    ctx.fillRect(b.x+10, b.y+18, 16, 9); ctx.fillStyle = 'rgba(8,6,24,.9)'; ctx.fillRect(b.x+16, b.y+21, 4, 6);
+  }
   if (state==='play' || state==='pause'){
     hudBox(W-90, 12, 36, 34, '#00e5ff');
     ctx.fillStyle = '#00e5ff'; ctx.fillRect(W-78, 21, 4, 16); ctx.fillRect(W-70, 21, 4, 16);
@@ -1480,7 +1488,7 @@ function drawTitle(){
   txt('1P  WASD · 마우스 · 화면 왼쪽 드래그', W/2, 656, 12, '#ff8fc0', 'center', null, 700);
   txt('2P  방향키 · 화면 오른쪽 드래그', W/2, 678, 12, '#7ff4ff', 'center', null, 700);
   txt('자동 발사 · 쓰러진 동료는 ♥로 부활', W/2, 702, 12, 'rgba(255,255,255,.75)', 'center', null, 700);
-  txt('M 전체 소리 · B 배경음악 켜기/끄기', W/2, 724, 11, 'rgba(205,246,255,.6)', 'center', null, 700);
+  txt('M 전체 소리 · B 배경음악 · Esc 게임 목록', W/2, 724, 11, 'rgba(205,246,255,.6)', 'center', null, 700);
   const bs = [best[1] && `SOLO ${best[1].toLocaleString()}`, best[2] && `DUO ${best[2].toLocaleString()}`].filter(Boolean).join('    ');
   if (bs) txt('HI-SCORE  ' + bs, W/2, 750, 13, '#ffd400', 'center', '#ff7a00');
   txt(`진행  SOLO ${Math.min(80, unlocked[1]-1)}/80  ·  DUO ${Math.min(80, unlocked[2]-1)}/80`, W/2, 772, 11, 'rgba(205,246,255,.7)', 'center', null, 700);

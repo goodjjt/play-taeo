@@ -35,5 +35,6 @@ Everything lives in one `<script type="module">`, in this order:
 
 ## Controls and persistence
 
+- **Home button**: the title screen has a ⌂ button in the top-left (`HOME_BTN`), and Esc on the title screen also works. Both go to `../index.html` through `goHome()`. New games should provide the same way back to the launcher.
 - **Controls**: pointer drag (multi-touch through the `drags` map), WASD for 1P, and arrow keys (1P in solo mode, 2P in two-player mode). P or Esc pauses, M mutes, B toggles music, and Enter or Space confirms.
 - **localStorage keys**: `ppyong_best` and `ppyong_best2` (high scores per mode), `ppyong_stage1` and `ppyong_stage2` (highest unlocked stage per mode, up to 81), and `ppyong_music`. Every storage access is wrapped in try/catch. Keep it that way.
